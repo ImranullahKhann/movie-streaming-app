@@ -5,38 +5,34 @@ import (
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"fmt"
 	"go.mongodb.org/mongo-driver/v2/mongo/options"
-	"log"
 	"os"
 )
 
-var dbClient *mongo.Client
-
-func ConnectDB() {
+func ConnectDB() (*mongo.Client, error) {
 	mongodbURI := os.Getenv("MONGODB_URI")
 	if mongodbURI == "" {
-		log.Fatal("environment variables not found")
+		return nil, fmt.Errorf("environment variables not found: MONGODB_URI")
 	}
-	fmt.Println(mongodbURI)
 
 	client, err := mongo.Connect(options.Client().ApplyURI(mongodbURI))
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to connect to MongoDB: %w", err)
 	}
 
 	// Checking connection
 	err = client.Ping(context.TODO(), nil)
 	if err != nil {
-		log.Fatal(err)
+		return nil, fmt.Errorf("failed to ping MongoDB: %w", err)
 	}
 
 	fmt.Println("Connected to MongoDB!")
 
-	dbClient = client
+	return client, nil
 }
 
-func OpenCollection(collectionName string) *mongo.Collection {
+func OpenCollection(client *mongo.Client, collectionName string) *mongo.Collection {
 	dbName := os.Getenv("DB_NAME")
-	collection := dbClient.Database(dbName).Collection(collectionName)
+	collection := client.Database(dbName).Collection(collectionName)
 
 	return collection
 }
