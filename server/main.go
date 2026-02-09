@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
-	// "github.com/go-playground/validator/v10"
 	cont "github.com/ImranullahKhann/movie-streaming-app/server/controllers"
 	db "github.com/ImranullahKhann/movie-streaming-app/server/database"
 	"github.com/joho/godotenv"
@@ -25,7 +24,8 @@ func main() {
 	mc := cont.NewMovieController(db.OpenCollection(dbClient, "movies"))
 
 	router.GET("/movies", mc.GetMovies)
-	router.GET("/movie/:imdbID", mc.GetMovie)
+	router.GET("/movies/:imdbID", mc.GetMovie)
+	router.POST("/movies/", mc.AddMovie)
 
 	router.Run() // listens on 8080 by default
 }

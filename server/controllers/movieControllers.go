@@ -8,14 +8,16 @@ import (
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"time"
+	"github.com/go-playground/validator/v10"
 )
 
 type MovieController struct {
 	movieCollection *mongo.Collection
+	validate *validator.Validate	
 }
 
 func NewMovieController(collection *mongo.Collection) *MovieController {
-	return &MovieController{movieCollection: collection}
+	return &MovieController{movieCollection: collection, validate: validator.New()}
 }
 
 func (mc *MovieController) GetMovies(c *gin.Context) {
@@ -30,7 +32,7 @@ func (mc *MovieController) GetMovies(c *gin.Context) {
 	}
 
 	var movies []models.Movie
-	if err = cursor.All(context.Background(), &movies); err != nil {
+	if err = cursor.All(ctx, &movies); err != nil {
 		c.JSON(500, gin.H{"error": "Can't read data", "details": err})
 		return
 	}
@@ -60,4 +62,31 @@ func (mc *MovieController) GetMovie(c *gin.Context) {
 	}
 
 	c.JSON(200, gin.H{"movie": movie})
+}
+
+func (mc *MovieController) AddMovie(c *gin.Context) {
+	var newMovie models.Movie
+
+	if err := c.BindJSON(&newMovie); err != nil {
+		c.JSON(400, gin.H{"error": "Invalid Request"})
+		return
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	err := mc.validate.Struct(newMovie)
+	if err != nil {
+		c.JSON(400, gin.H{"error": "Invalid field data", "details": err.Error()})
+		return
+	}
+
+	_, err = mc.movieCollection.InsertOne(ctx, newMovie)
+
+	if err != nil {
+		c.JSON(500, gin.H{"error": "Something went wrong", "details": err})
+		return
+	}
+	
+	c.JSON(201, gin.H{"message": "Movie added successfully"})	
 }
