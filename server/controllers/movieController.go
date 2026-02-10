@@ -5,15 +5,15 @@ import (
 	"errors"
 	"github.com/ImranullahKhann/movie-streaming-app/server/models"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/v2/bson"
 	"go.mongodb.org/mongo-driver/v2/mongo"
 	"time"
-	"github.com/go-playground/validator/v10"
 )
 
 type MovieController struct {
 	movieCollection *mongo.Collection
-	validate *validator.Validate	
+	validate        *validator.Validate
 }
 
 func NewMovieController(collection *mongo.Collection) *MovieController {
@@ -84,9 +84,9 @@ func (mc *MovieController) AddMovie(c *gin.Context) {
 	_, err = mc.movieCollection.InsertOne(ctx, newMovie)
 
 	if err != nil {
-		c.JSON(500, gin.H{"error": "Something went wrong", "details": err})
+		c.JSON(500, gin.H{"error": "Couldn't write to database", "details": err})
 		return
 	}
-	
-	c.JSON(201, gin.H{"message": "Movie added successfully"})	
+
+	c.JSON(201, gin.H{"message": "Movie added successfully"})
 }
