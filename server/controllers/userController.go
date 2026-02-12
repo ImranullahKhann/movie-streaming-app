@@ -33,6 +33,20 @@ func (uc *UserController) RegisterUser(c *gin.Context) {
 		return
 	}
 
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	count, err := uc.userCollection.CountDocuments(ctx, bson.D{{Key: "email", Value: newUser.Email}})
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to check existing user"})
+		return
+	}
+	if count > 0 {
+		c.JSON(http.StatusConflict, gin.H{"error": "User already exists"})
+		return
+	}
+
 	newUser.CreatedAt = time.Now()
 	newUser.UpdatedAt = time.Now()
 	hash, err := utils.HashPassword(newUser.Password)
@@ -46,9 +60,6 @@ func (uc *UserController) RegisterUser(c *gin.Context) {
 		c.JSON(400, gin.H{"error": "Invalid field data", "details": err.Error()})
 		return
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 
 	if _, err := uc.userCollection.InsertOne(ctx, newUser); err != nil {
 		c.JSON(500, gin.H{"error": "Couldn't write to database", "details": err})
@@ -127,7 +138,7 @@ func (uc *UserController) LogoutUser(c *gin.Context) {
 }
 
 func (uc *UserController) RefreshTokens(c *gin.Context) {
-	ref, err := middleware.MustCookie(c, "access_token")
+	ref, err := middleware.MustCookie(c, "refresh_token")
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "missing refresh token"})
 		return

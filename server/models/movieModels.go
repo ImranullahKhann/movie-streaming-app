@@ -14,17 +14,11 @@ type Movie struct {
 	YoutubeId   string        `bson:"youtube_id" json:"youtube_id" validate:"required"`
 	Genres      []Genre       `json:"genre" validate"dive,required"`
 	AdminReview string        `bson:"admin_review" json:"admin_review" validate"max=128"`
-	Ranking     Ranking       `json:"ranking"`
+	Rating     int       `bson:"rating" json:"ranking" validate:"min=1,max=10"`
 }
 
 type Genre struct {
 	ID        bson.ObjectID `bson:"_id,omitempty" json:"id"`
 	GenreID   int           `bson:"genre_id" json"genre_id" validate:"required"`
 	GenreName string        `bson:"genre_name" json:"genre_name" validate:"required,max=64"`
-}
-
-type Ranking struct {
-	ID           bson.ObjectID `bson:"_id,omitempty" json:"id"`
-	RankingValue int           `bson:"ranking_value" json:"ranking_value" validate="required"`
-	RankingName  string        `bson:"ranking_name" json:"ranking_name" validate="required,max=24"`
 }

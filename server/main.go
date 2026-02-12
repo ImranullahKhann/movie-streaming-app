@@ -40,7 +40,7 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	mc := cont.NewMovieController(db.OpenCollection(dbClient, "movies"))
+	mc := cont.NewMovieController(db.OpenCollection(dbClient, "movies"), db.OpenCollection(dbClient, "users"))
 	uc := cont.NewUserController(db.OpenCollection(dbClient, "users"), rds)
 
 	movies := router.Group("/movies")
@@ -48,6 +48,7 @@ func main() {
 		movies.GET("/", mc.GetMovies)
 		movies.GET("/:imdbID", mc.GetMovie)
 		movies.POST("/", middleware.AuthMiddleware(rds), mc.AddMovie)
+		movies.GET("/recommended/", middleware.AuthMiddleware(rds), mc.GetRecommendedMovies)
 	}	
 
 	users := router.Group("/user")
