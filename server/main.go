@@ -43,13 +43,20 @@ func main() {
 	mc := cont.NewMovieController(db.OpenCollection(dbClient, "movies"))
 	uc := cont.NewUserController(db.OpenCollection(dbClient, "users"), rds)
 
-	router.GET("/movies", mc.GetMovies)
-	router.GET("/movies/:imdbID", mc.GetMovie)
-	router.POST("/movies/", mc.AddMovie)
+	movies := router.Group("/movies")
+	{
+		movies.GET("/", mc.GetMovies)
+		movies.GET("/:imdbID", mc.GetMovie)
+		movies.POST("/", middleware.AuthMiddleware(rds), mc.AddMovie)
+	}	
 
-	router.POST("/register/", middleware.AuthMiddleware(rds), uc.RegisterUser)
-	router.POST("/login/", uc.LoginUser)
-	router.GET("/logout/", middleware.AuthMiddleware(rds), uc.LogoutUser)
+	users := router.Group("/user")
+	{
+		users.POST("/register/", middleware.AuthMiddleware(rds), uc.RegisterUser)
+		users.POST("/login/", uc.LoginUser)
+		users.GET("/logout/", middleware.AuthMiddleware(rds), uc.LogoutUser)
+	}
+	
 	router.GET("/token/refresh", uc.RefreshTokens)
 
 	router.Run() // listens on 8080 by default
