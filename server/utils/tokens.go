@@ -1,35 +1,35 @@
 package utils
 
 import (
+	"context"
+	"errors"
+	"github.com/ImranullahKhann/movie-streaming-app/server/store"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"time"
-	"os"
-	"context"
-	"github.com/ImranullahKhann/movie-streaming-app/server/store"
 	"net/http"
-	"errors"
-	"github.com/gin-gonic/gin"
+	"os"
+	"time"
 )
 
 type Tokens struct {
-	Access   string
-	Refresh  string
-	JTIAcc   string
-	JTIRef   string
-	ExpAcc   time.Time
-	ExpRef   time.Time
-	UserEmail   string
+	Access    string
+	Refresh   string
+	JTIAcc    string
+	JTIRef    string
+	ExpAcc    time.Time
+	ExpRef    time.Time
+	UserEmail string
 }
 
 func IssueTokens(email string) (*Tokens, error) {
 	now := time.Now().UTC()
-	t := &Tokens {
+	t := &Tokens{
 		UserEmail: email,
-		JTIAcc: uuid.NewString(),
-		JTIRef: uuid.NewString(),
-		ExpAcc: now.Add(15 * time.Minute),
-		ExpRef: now.Add(7 * 25 * time.Hour),
+		JTIAcc:    uuid.NewString(),
+		JTIRef:    uuid.NewString(),
+		ExpAcc:    now.Add(15 * time.Minute),
+		ExpRef:    now.Add(7 * 25 * time.Hour),
 	}
 
 	// HS256 (HMAC with SHA-256) is a symmetric, keyed-hash algorithm used to sign JWT. It uses a single, shared secret for both generating and verifying signatures, making it fast and suitable for monolithic systems where the same entity creates and validates tokens
@@ -42,9 +42,9 @@ func IssueTokens(email string) (*Tokens, error) {
 	})
 
 	ref := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.RegisteredClaims{
-		Subject: email,
-		ID: t.JTIRef,
-		IssuedAt: jwt.NewNumericDate(now),
+		Subject:   email,
+		ID:        t.JTIRef,
+		IssuedAt:  jwt.NewNumericDate(now),
 		ExpiresAt: jwt.NewNumericDate(t.ExpRef),
 	})
 
@@ -81,7 +81,7 @@ func SetAuthCookies(c *gin.Context, t *Tokens) {
 	// "/" : the path, means the cookie is valid for all routes on our domain
 	// "" : the domain, leaving this blank means it defaults to the current domain of your api
 	// bool (Secure): This ensures that the cookie is only sent over encrypted HTTPS connections, turn false when running locally
-	// bool (HttpOnly): This makes the cookie HTTP Only. Meaning it prevents javascript on the client side from accessing the cookie. This makes it harder for an attacker to steal the token via an XSS attack	
+	// bool (HttpOnly): This makes the cookie HTTP Only. Meaning it prevents javascript on the client side from accessing the cookie. This makes it harder for an attacker to steal the token via an XSS attack
 }
 
 func ClearAuthCookies(c *gin.Context) {
@@ -94,7 +94,6 @@ func ParseAccess(tokenStr string) (*jwt.RegisteredClaims, error) {
 	secret := os.Getenv("ACCESS_SECRET")
 	return parseWithSecret(tokenStr, secret)
 }
-
 
 func ParseRefresh(tokenStr string) (*jwt.RegisteredClaims, error) {
 	secret := os.Getenv("REFRESH_SECRET")

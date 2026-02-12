@@ -2,13 +2,13 @@ package store
 
 import (
 	"context"
+	"github.com/redis/go-redis/v9"
 	"os"
 	"time"
-	"github.com/redis/go-redis/v9"
 )
 
-type Redis struct{ 
-	Client *redis.Client 
+type Redis struct {
+	Client *redis.Client
 }
 
 func NewRedis() *Redis {

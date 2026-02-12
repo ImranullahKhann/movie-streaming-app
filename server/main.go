@@ -4,12 +4,12 @@ import (
 	cont "github.com/ImranullahKhann/movie-streaming-app/server/controllers"
 	db "github.com/ImranullahKhann/movie-streaming-app/server/database"
 	"github.com/ImranullahKhann/movie-streaming-app/server/middleware"
+	"github.com/ImranullahKhann/movie-streaming-app/server/store"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
-	"github.com/gin-contrib/cors"
-	"github.com/ImranullahKhann/movie-streaming-app/server/store"
 )
 
 func main() {
@@ -49,6 +49,8 @@ func main() {
 
 	router.POST("/register/", middleware.AuthMiddleware(rds), uc.RegisterUser)
 	router.POST("/login/", uc.LoginUser)
+	router.GET("/logout/", middleware.AuthMiddleware(rds), uc.LogoutUser)
+	router.GET("/token/refresh", uc.RefreshTokens)
 
 	router.Run() // listens on 8080 by default
 }

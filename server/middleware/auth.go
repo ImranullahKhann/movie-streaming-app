@@ -3,11 +3,11 @@ package middleware
 import (
 	"context"
 	"errors"
-	"net/http"
-	"strings"
 	"github.com/ImranullahKhann/movie-streaming-app/server/store"
 	"github.com/ImranullahKhann/movie-streaming-app/server/utils"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strings"
 )
 
 func bearerFromHeader(c *gin.Context) string {
